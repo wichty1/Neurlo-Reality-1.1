@@ -8,7 +8,7 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - [x] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts
 - [x] Phase 4 — Schedule (calendar views), Work, Job Search (kanban DnD), Wants & Wishes
 - [x] Phase 5 — Money, People, Habits & Goals, Notes
-- [ ] Phase 6 — 3D brain homepage + 2D fallback + live stats
+- [x] Phase 6 — 3D brain homepage + 2D fallback + live stats
 - [ ] Phase 7 — polish, a11y, PWA, perf, README
 
 ## Architecture (where things live)
@@ -47,6 +47,10 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - Phase 5 engine: `ViewDef.bucket: 'month'`, `ViewDef.where` (chart only records matching e.g. kind=Expense), `ModuleDef.trends[].days`, `TodayHint.occursOn` also used by the calendar (birthdays), `Field.suggestFrom: 'store.field'` (datalist autocomplete, e.g. milestone → goal), `Collection.pinField` (pinned notes first).
 - `src/pages/extras.ts` — overview widgets: Money (month KPIs, budget vs spent bars, bills due −7…+21 days with paid toggles stored in the bill's `_days`, savings progress), People (birthdays next 30 days with age, catch-up nudges with "Contacted today"), Habits (12-week heatmap + streak per habit, goal progress from milestones matched by goal name, case-insensitive).
 - Money amounts are positive numbers with Income/Expense type; formatting `fmtMoney` (2 decimals when not whole).
+
+- `src/engine/brain.ts` (lazy chunk with three.js, ~141 kB gzip; `chunkSizeWarningLimit: 700` in vite.config.ts) — seeded point cloud: two folded hemispheres (flattened medial side, offset ±0.36), cerebellum, stem; one glow sprite + core + invisible hit sphere per module at a region in `REGIONS` (golden-spiral fallback for new modules). HTML overlay label buttons (keyboard accessible, aria-label = name + live stat), tooltip on hover/focus, raycast hover/click on canvas, OrbitControls (no pan, zoom 2.2–7), idle auto-rotate paused while dragging, while the mouse is over the brain or a label is focused (inertia halted), resumes after 3 s. Click → 700 ms camera zoom → navigate (instant with reduced motion). Glow opacity/size and pulse from activity. Pixel ratio ≤ 2, RAF paused when tab hidden, camera fitted to portrait screens on first layout, slow detection (first 90 frames > 50 ms avg → grid + toast, remembered), context loss → grid.
+- `src/pages/home-data.ts` — `moduleInfo()` (stat from `mod.stat()` or "N entries · updated X", activity 0.15–1 from latest `updatedAt` over 14 days) and `glance()` (next event, tasks due, latest mood, routines done).
+- `src/pages/home.ts` — mode: saved `homeView` in localStorage, else brain when WebGL is available and the device is not low-end (≤2 cores or ≤2 GB), else grid. Toggle button always visible (disabled to 3D when WebGL is missing). Grid tiles show live stats and dim/glow by activity.
 
 ## Decisions
 - Emoji used as module icons (system font, no network).
@@ -116,13 +120,28 @@ Test scripts live outside the repo (session scratchpad); they are not part of th
 - [x] Phases 1–4 suites + recurrence unit tests still green; no console errors; no external requests
 - [ ] Not verified: Feb 29 birthday on Feb 28 (logic only), budget over-limit red bar (CSS only)
 
+## Phase 6 manual test checklist (Playwright with SwiftShader software WebGL, 21/21 + mobile/light check)
+- [x] Canvas renders; 12 labeled nodes; node aria-label carries live stat ("Mood avg 8/10 (7d)")
+- [x] Idle auto-rotate moves nodes; pauses while the pointer is over the brain; hover tooltip shows stat
+- [x] Click node → zoom animation → module page; reduced motion → no auto-rotate and instant navigation
+- [x] Grid toggle disposes the brain, grid tiles show stats, choice remembered after reload, toggle back works
+- [x] Launch with WebGL disabled → grid + explanatory note, 3D toggle disabled, three.js chunk never requested
+- [x] "Today at a glance" shows mood after a check-in
+- [x] Mobile 390 px: camera fitted, no label clipped horizontally; light theme renders
+- [x] Phases 1–5 suites green; no console errors; no external requests
+- [~] Drag-rotate and wheel zoom were executed but only checked for "no error", not for the resulting angle
+- [ ] Not verified: real GPU performance (SwiftShader gave ~31–34 fps), pinch zoom on a real phone, slow-device fallback trigger (logic only), RAF pause when hidden (logic only)
+
 ## Known issues
 - Keys typed in the few ms before the palette input mounts go to the page (could trigger the `n` shortcut). Minor.
 - Mobile tab bar: Home, Today, Search, More.
+- Brain: labels of nearby nodes can overlap at some angles (back-facing ones are dimmed); rotating separates them.
 - Mobile: collection toolbar (search + several filters + sort + view tabs) is tall on phones → collapse filters behind a toggle in Phase 7.
 
 ## Next
-Phase 6: 3D brain homepage (three.js, procedural two-hemisphere point cloud / low-poly mesh, glowing labeled node per module, hover tooltip with `mod.stat()`, click → zoom + navigate, drag rotate, wheel/pinch zoom, idle auto-rotate, brightness from recent activity (latest `updatedAt` per module), pixel ratio ≤ 2, pause when hidden, prefers-reduced-motion, auto-fallback to `renderModuleGrid()` if no WebGL / slow, visible "Switch to grid view" toggle remembered in localStorage) + "today at a glance" panel (next event, tasks due, mood, routines done — reuse today-parts.ts). Lazy-load three via dynamic import so grid users never download it.
+Phase 7: polish — mobile layout pass (collapse collection filters behind a toggle on phones), accessibility pass (contrast check, focus order, labels, aria on views), PWA (manifest + service worker caching the built assets for offline; only if no bugs), performance check, README (run, build, backup), final checks (no console.error on load, no external URLs in dist, data survives reload, works from a static server).
+
+(Done) Phase 6: 3D brain homepage (three.js, procedural two-hemisphere point cloud / low-poly mesh, glowing labeled node per module, hover tooltip with `mod.stat()`, click → zoom + navigate, drag rotate, wheel/pinch zoom, idle auto-rotate, brightness from recent activity (latest `updatedAt` per module), pixel ratio ≤ 2, pause when hidden, prefers-reduced-motion, auto-fallback to `renderModuleGrid()` if no WebGL / slow, visible "Switch to grid view" toggle remembered in localStorage) + "today at a glance" panel (next event, tasks due, mood, routines done — reuse today-parts.ts). Lazy-load three via dynamic import so grid users never download it.
 
 (Done) Phase 5: Money (income/expense log with monthly totals chart, monthly budget per category with spent vs budget, bills with due dates → `today.role='task'` + recurrence?, savings goals), People (contacts, birthdays → Today events via yearly recurrence, last-contacted, notes), Habits & Goals (daily habits → routine role with streaks; long-term goals with milestones), Notes (exists; add pinned-first sort / review).
 
