@@ -179,9 +179,14 @@ export function renderCollection(mod: ModuleDef, col: Collection, openId?: strin
     if (r) openEditor(mod, col, r);
   });
 
+  // On phones, filters and sort fold behind one button so the list stays near the top.
+  const more = h('div', { class: 'toolbar-more', id: `more-${store.replace('.', '-')}` }, filterBar, sortSel, dirBtn);
+  const moreBtn = h('button', { type: 'button', class: 'btn btn-sm toolbar-toggle', 'aria-expanded': 'false', 'aria-controls': more.id,
+    onclick: () => { const open = toolbar.classList.toggle('open'); moreBtn.setAttribute('aria-expanded', String(open)); } }, 'Filter & sort');
+  const toolbar = h('div', { class: 'toolbar' }, search, moreBtn, more, h('div', { class: 'toolbar-right' }, viewTabs, count));
   return h('section', { class: 'collection' },
     h('div', { class: 'page-head' }, h('h1', {}, h('span', { 'aria-hidden': 'true' }, col.icon ?? mod.icon), ' ', col.name), col.description ? h('p', { class: 'muted' }, col.description) : null),
     quickAddForm(mod, col, store),
-    h('div', { class: 'toolbar' }, search, filterBar, h('div', { class: 'toolbar-right' }, sortSel, dirBtn, viewTabs, count)),
+    toolbar,
     body);
 }

@@ -90,6 +90,15 @@ async function boot(): Promise<void> {
   startReminders();
   onRoute((r) => render(r, main, crumbs));
   render(currentRoute(), main, crumbs);
+  registerOffline();
+}
+
+/** Offline support for production builds served over http(s) (service workers do not run from file://). */
+function registerOffline(): void {
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  const go = () => navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('Offline mode unavailable:', e));
+  // boot() is async, so the load event may already have fired.
+  if (document.readyState === 'complete') void go(); else window.addEventListener('load', () => void go());
 }
 
 void boot();

@@ -55,7 +55,9 @@ export function closePalette(): void {
 export async function openPalette(): Promise<void> {
   if (overlay) return;
   closePanel();
-  const items = await buildItems();
+  // Mount the input immediately (so early keystrokes land in it), then load results.
+  let items: Item[] = [];
+  let loaded = false, pendingEnter = false;
   const input = h('input', { type: 'text', role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'palette-list', 'aria-autocomplete': 'list',
     'aria-label': 'Search everything', placeholder: 'Search entries, pages and actions…', autocomplete: 'off' });
   const list = h('ul', { id: 'palette-list', role: 'listbox', class: 'palette-list' });
@@ -75,6 +77,7 @@ export async function openPalette(): Promise<void> {
     it.run();
   };
   const paint = () => {
+    if (!loaded) return;
     const words = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     shown = words.length
       ? items.map((it) => ({ it, s: score(it, words) })).filter((x) => x.s >= 0).sort((a, b) => b.s - a.s).slice(0, 40).map((x) => x.it)
@@ -91,7 +94,7 @@ export async function openPalette(): Promise<void> {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, shown.length - 1); paintActive(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); paintActive(); }
-    else if (e.key === 'Enter') { e.preventDefault(); run(shown[active]); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (loaded) run(shown[active]); else pendingEnter = true; }
     else if (e.key === 'Escape') { e.preventDefault(); closePalette(); if (prevFocus instanceof HTMLElement) prevFocus.focus(); }
     else if (e.key === 'Tab') e.preventDefault();
   });
@@ -100,8 +103,13 @@ export async function openPalette(): Promise<void> {
     h('div', { class: 'palette', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Command palette' }, input, list,
       h('div', { class: 'palette-foot muted small' }, '↑↓ to move · Enter to open · Esc to close')));
   document.body.append(overlay);
-  paint();
   input.focus();
+  list.replaceChildren(h('li', { class: 'muted palette-empty' }, 'Loading…'));
+  items = await buildItems();
+  loaded = true;
+  if (!overlay) return;
+  paint();
+  if (pendingEnter) run(shown[0]); // Enter pressed while results were loading
 }
 
 export function installPalette(): void {
