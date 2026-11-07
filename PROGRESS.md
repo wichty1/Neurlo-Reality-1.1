@@ -173,3 +173,5 @@ Nothing left in the brief. Possible future work only if requested.
 (Done) Phase 5: Money (income/expense log with monthly totals chart, monthly budget per category with spent vs budget, bills with due dates → `today.role='task'` + recurrence?, savings goals), People (contacts, birthdays → Today events via yearly recurrence, last-contacted, notes), Habits & Goals (daily habits → routine role with streaks; long-term goals with milestones), Notes (exists; add pinned-first sort / review).
 
 (Done) Phase 4: Schedule module (events with recurrence → `today.occursOn`, reminders, time blocks; month/week/day calendar view registered as `calendar`; in-app notifications while open), Work (shifts/hours, tasks with `today.role='task'`, projects, notes, wins, goals), Job Search (kanban view with drag & drop registered as `kanban`, applications, contacts/outreach with follow-ups, interview prep, resume versions, weekly counter), Wants & Wishes (status Idea/Planning/In progress/Done → `STATUS` in common.ts).
+
+- **Hosting:** GitHub Pages via `.github/workflows/pages.yml` (deploys on push to `main` or manual run). Needs Settings → Pages → Source: GitHub Actions once.

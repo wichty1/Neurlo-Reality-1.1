@@ -36,6 +36,16 @@ Opening `dist/index.html` directly by double-clicking (a `file://` address) does
 
 **Your data belongs to the browser and address you use.** `http://localhost:8080` and `http://localhost:4173` are different addresses, so each has its own separate data. Pick one address and keep using it, and use backups to move data between them.
 
+## Use it as a website (GitHub Pages, free)
+
+The workflow in `.github/workflows/pages.yml` builds the app and publishes it whenever `main` changes.
+
+1. On GitHub, open the repo's **Settings → Pages**, and under **Build and deployment → Source** choose **GitHub Actions** (one time).
+2. Merge into `main` (or run the workflow by hand: **Actions → Deploy to GitHub Pages → Run workflow**).
+3. The site appears at `https://<your-username>.github.io/<repo-name>/` (the exact link is shown on the Settings → Pages screen and in the workflow run).
+
+Your data is still stored only in your own browser at that address; GitHub hosts the app's code, never your entries. The site is public, but it starts empty for every visitor. Pages is free for public repositories; a private repository needs a paid GitHub plan for Pages.
+
 ## Back up your data (do this weekly)
 
 Data lives only in this browser on this device. Clearing site data, uninstalling the browser or using a private window will lose it. The app reminds you on Today and in Settings when your last backup is more than a week old.
