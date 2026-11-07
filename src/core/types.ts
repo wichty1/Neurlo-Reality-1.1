@@ -22,6 +22,8 @@ export interface Field {
   help?: string;
   /** Set false to hide this field from the collection filter bar. */
   filter?: boolean;
+  /** text: suggest existing values from another collection, as "store.field" (e.g. "habits.goals.goal"). */
+  suggestFrom?: string;
 }
 
 export type ViewType = 'table' | 'cards' | 'checklist' | 'calendar' | 'kanban' | 'chart';
@@ -41,7 +43,9 @@ export interface ViewDef {
   /** chart: split one value field into several series by this field (e.g. lab test name). */
   seriesBy?: string;
   /** chart (bar): bucket size, default week. */
-  bucket?: 'day' | 'week';
+  bucket?: 'day' | 'week' | 'month';
+  /** chart: only records whose field equals the value (e.g. { kind: 'Expense' }). */
+  where?: Record<string, string>;
 }
 
 /**
@@ -80,6 +84,8 @@ export interface Collection {
   defaultSort?: { key: string; dir: 'asc' | 'desc' };
   description?: string;
   today?: TodayHint;
+  /** Checkbox field whose checked records are always listed first (e.g. pinned notes). */
+  pinField?: string;
   /** Computes derived fields on save (e.g. sleep hours from bed/wake times); returned keys overwrite. */
   derive?: (data: Record<string, unknown>) => Record<string, unknown>;
 }
@@ -92,7 +98,7 @@ export interface ModuleDef {
   description: string;
   collections: Collection[];
   /** Trend charts shown on the module overview (collection id + chart view). */
-  trends?: { collection: string; view: ViewDef; title: string }[];
+  trends?: { collection: string; view: ViewDef; title: string; days?: number }[];
   /** Optional live stat for overview cards / brain tooltip. */
   stat?: () => Promise<string>;
 }

@@ -14,6 +14,7 @@ import './engine/calendar';
 import './engine/kanban';
 import { startReminders } from './core/reminders';
 import './pages/schedule-overview';
+import './pages/extras';
 import { renderOverview } from './pages/overview';
 import { renderHome } from './pages/home';
 import { renderToday } from './pages/today';

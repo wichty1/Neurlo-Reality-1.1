@@ -8,7 +8,8 @@ export function trendChart(col: Collection, recs: DBRecord[], v: ViewDef, days: 
   const dateField = col.dateField ?? 'createdAt';
   const from = days ? addDays(new Date(), -days + 1) : undefined;
   const fromDay = from ? isoDate(from) : '';
-  const inRange = recs.filter((r) => !fromDay || String(r[dateField] ?? isoDate(new Date(r.createdAt))).slice(0, 10) >= fromDay);
+  const where = Object.entries(v.where ?? {});
+  const inRange = recs.filter((r) => where.every(([k, val]) => r[k] === val)).filter((r) => !fromDay || String(r[dateField] ?? isoDate(new Date(r.createdAt))).slice(0, 10) >= fromDay);
   const fields = (v.valueFields ?? []).map((k) => col.fields.find((f) => f.key === k)).filter((f) => !!f);
   const agg = v.agg ?? (fields.length ? 'avg' : 'count');
   const kind = v.chart ?? 'line';
@@ -26,14 +27,14 @@ export function trendChart(col: Collection, recs: DBRecord[], v: ViewDef, days: 
     const keys = Array.from(vals.keys()).sort();
     if (!keys.length) return barChart([], { title });
     const bars: { label: string; value: number; tip: string }[] = [];
-    let d = from ? (bucket === 'week' ? startOfWeek(from) : from) : parseLocal(keys[0])!;
+    let d = from ? (bucket === 'week' ? startOfWeek(from) : bucket === 'month' ? new Date(from.getFullYear(), from.getMonth(), 1) : from) : parseLocal(keys[0])!;
     const end = new Date();
     while (d <= end) {
       const k = isoDate(d);
       const value = vals.get(k) ?? 0;
-      const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const label = d.toLocaleDateString(undefined, bucket === 'month' ? { month: 'short', year: '2-digit' } : { month: 'short', day: 'numeric' });
       bars.push({ label, value, tip: `${bucket === 'week' ? 'Week of ' : ''}${label}: ${Math.round(value * 10) / 10}${f?.unit ? ' ' + f.unit : ''}` });
-      d = addDays(d, bucket === 'week' ? 7 : 1);
+      d = bucket === 'month' ? new Date(d.getFullYear(), d.getMonth() + 1, 1) : addDays(d, bucket === 'week' ? 7 : 1);
     }
     return barChart(bars, { title });
   }

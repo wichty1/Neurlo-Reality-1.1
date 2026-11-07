@@ -40,8 +40,8 @@ export function renderOverview(mod: ModuleDef): HTMLElement {
       const recs = data.find((d) => d.c.id === t.collection)?.recs ?? [];
       if (!col) return h('div');
       return h('a', { class: 'card trend-card', href: href('m', mod.id, col.id), 'aria-label': `${t.title}: open ${col.name}` },
-        h('h3', {}, t.title, h('span', { class: 'muted small' }, t.view.chart === 'heatmap' ? ' · last 26 weeks' : ' · last 90 days')),
-        trendChart(col, recs, t.view, t.view.chart === 'heatmap' ? 182 : 90, t.title));
+        h('h3', {}, t.title, h('span', { class: 'muted small' }, t.days ? ` · last ${Math.round(t.days / 30)} months` : t.view.chart === 'heatmap' ? ' · last 26 weeks' : ' · last 90 days')),
+        trendChart(col, recs, t.view, t.days ?? (t.view.chart === 'heatmap' ? 182 : 90), t.title));
     }));
     const fn = extras.get(mod.id);
     extra.replaceChildren();

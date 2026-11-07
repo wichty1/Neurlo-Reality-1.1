@@ -21,7 +21,7 @@ export function occurrences(sources: CalSource[], day: string): Occ[] {
   for (const s of sources) {
     const { dateField, timeField, endField } = hintFields(s.col);
     for (const r of s.records) {
-      if (!occursOn(r, day, dateField)) continue;
+      if (!(s.col.today?.occursOn ? s.col.today.occursOn(r, day) : occursOn(r, day, dateField))) continue;
       const end = endField && typeof r[endField] === 'string' ? String(r[endField]).slice(-5) : '';
       out.push({ s, r, time: timeOf(r, dateField, timeField), end });
     }

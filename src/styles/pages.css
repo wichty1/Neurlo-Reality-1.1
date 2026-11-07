@@ -104,3 +104,20 @@ kbd { font-family: var(--mono); font-size: .75rem; padding: 1px 6px; border: 1px
 .kanban-card:hover { border-color: var(--accent); }
 .kanban-card.dragging { opacity: .5; }
 .kanban-move { margin-top: 4px; font-size: .78rem; min-height: 30px !important; padding: 3px 6px !important; }
+
+/* Overview widgets */
+.extra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.extra-card h2 { font-size: 1rem; }
+.meter-row, .habit-row { margin-bottom: 12px; }
+.meter-label { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap; }
+.bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+.bar.over span { background: var(--danger); }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kpis div { display: flex; flex-direction: column; }
+.kpis strong { font-size: 1.3rem; }
+.plain-list { list-style: none; padding: 0; margin: 0; }
+.plain-list li { padding: 7px 0; border-bottom: 1px solid var(--border); }
+.plain-list li:last-child { border-bottom: 0; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.habit-row .chart-fig { max-width: 220px; }

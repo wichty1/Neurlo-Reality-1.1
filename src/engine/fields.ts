@@ -1,5 +1,6 @@
 // Field-type registry: input widgets, value parsing and display formatting.
 import type { Field } from '../core/types';
+import * as db from '../core/db';
 import { h, fmtDate, fmtDateTime, fmtDuration, parseDuration, asArray } from '../core/util';
 
 export interface FieldInput {
@@ -115,6 +116,17 @@ export function fieldInput(f: Field, value: unknown, onChange: () => void): Fiel
     default: {
       const i = h('input', { ...common, type: 'text' }); i.value = str;
       input = i; read = () => i.value.trim() || undefined;
+      if (f.suggestFrom) {
+        const dl = h('datalist', { id: `${id}-dl` });
+        i.setAttribute('list', dl.id);
+        wrap.append(dl);
+        const at = f.suggestFrom.lastIndexOf('.');
+        const store = f.suggestFrom.slice(0, at), key = f.suggestFrom.slice(at + 1);
+        void db.list(store).then((recs) => {
+          const vals = Array.from(new Set(recs.map((r) => String(r[key] ?? '').trim()).filter(Boolean))).sort();
+          dl.replaceChildren(...vals.map((v) => h('option', { value: v })));
+        }).catch(() => {});
+      }
     }
   }
   if (f.unit && f.type === 'number') wrap.append(h('div', { class: 'with-unit' }, input, h('span', { class: 'unit' }, f.unit)));

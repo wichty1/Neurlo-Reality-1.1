@@ -10,8 +10,11 @@ import { schedule } from './schedule';
 import { work } from './work';
 import { jobs } from './jobs';
 import { wants } from './wants';
+import { money } from './money';
+import { people } from './people';
+import { habits } from './habits';
 
-export const MODULES: ModuleDef[] = [schedule, health, skin, hair, mind, work, jobs, wants, notes];
+export const MODULES: ModuleDef[] = [schedule, health, skin, hair, mind, habits, work, jobs, money, people, wants, notes];
 
 export function getModule(id: string): ModuleDef | undefined {
   return MODULES.find((m) => m.id === id);

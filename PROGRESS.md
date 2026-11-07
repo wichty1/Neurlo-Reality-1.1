@@ -7,7 +7,7 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - [x] Phase 2 — Today page, Settings & Data (export/import/wipe, CSV), command palette (Ctrl/Cmd+K)
 - [x] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts
 - [x] Phase 4 — Schedule (calendar views), Work, Job Search (kanban DnD), Wants & Wishes
-- [ ] Phase 5 — Money, People, Habits & Goals, Notes (Notes config exists; review/extend)
+- [x] Phase 5 — Money, People, Habits & Goals, Notes
 - [ ] Phase 6 — 3D brain homepage + 2D fallback + live stats
 - [ ] Phase 7 — polish, a11y, PWA, perf, README
 
@@ -43,6 +43,10 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - `src/core/reminders.ts` — every 30s while open: records in collections with a `remind` field and a `today` event hint; fires toast (+ local Notification if permitted and tab hidden); fired keys in localStorage `remindersFired` (pruned after 3 days). Window: from reminder time until 1h after start.
 - `src/pages/schedule-overview.ts` — combined calendar of all `today.role='event'` collections on the Schedule overview.
 - `Field.filter: false` hides a field from the filter bar.
+
+- Phase 5 engine: `ViewDef.bucket: 'month'`, `ViewDef.where` (chart only records matching e.g. kind=Expense), `ModuleDef.trends[].days`, `TodayHint.occursOn` also used by the calendar (birthdays), `Field.suggestFrom: 'store.field'` (datalist autocomplete, e.g. milestone → goal), `Collection.pinField` (pinned notes first).
+- `src/pages/extras.ts` — overview widgets: Money (month KPIs, budget vs spent bars, bills due −7…+21 days with paid toggles stored in the bill's `_days`, savings progress), People (birthdays next 30 days with age, catch-up nudges with "Contacted today"), Habits (12-week heatmap + streak per habit, goal progress from milestones matched by goal name, case-insensitive).
+- Money amounts are positive numbers with Income/Expense type; formatting `fmtMoney` (2 decimals when not whole).
 
 ## Decisions
 - Emoji used as module icons (system font, no network).
@@ -102,12 +106,24 @@ Browser (Playwright, 21/21):
 - [ ] Not verified: real desktop Notification popup (needs permission UI), touch drag on a phone (move-to select is the touch path)
 Test scripts live outside the repo (session scratchpad); they are not part of the deliverable.
 
+## Phase 5 manual test checklist (Playwright, 20/20)
+- [x] Money: KPIs In $500 / Spent $80.50 / Net $419.50; budget Groceries $50 / $200; stat line; spending-per-month bar
+- [x] Monthly bill due today listed; mark paid persists across reload; bill also in Today schedule
+- [x] People: birthday today shows "today 🎉 · turns N" and on Today; catch-up nudge for 10 days > 7; "Contacted today" clears it
+- [x] Interaction "Who" suggests contact names (datalist)
+- [x] Habits: tick → streak 1 + heatmap cell on overview, ticked on Today; goal shows 1/2 milestones; milestone due today on Today
+- [x] Notes newest-first; pinning an older note moves it to the top
+- [x] Phases 1–4 suites + recurrence unit tests still green; no console errors; no external requests
+- [ ] Not verified: Feb 29 birthday on Feb 28 (logic only), budget over-limit red bar (CSS only)
+
 ## Known issues
 - Keys typed in the few ms before the palette input mounts go to the page (could trigger the `n` shortcut). Minor.
 - Mobile tab bar: Home, Today, Search, More.
 - Mobile: collection toolbar (search + several filters + sort + view tabs) is tall on phones → collapse filters behind a toggle in Phase 7.
 
 ## Next
-Phase 5: Money (income/expense log with monthly totals chart, monthly budget per category with spent vs budget, bills with due dates → `today.role='task'` + recurrence?, savings goals), People (contacts, birthdays → Today events via yearly recurrence, last-contacted, notes), Habits & Goals (daily habits → routine role with streaks; long-term goals with milestones), Notes (exists; add pinned-first sort / review).
+Phase 6: 3D brain homepage (three.js, procedural two-hemisphere point cloud / low-poly mesh, glowing labeled node per module, hover tooltip with `mod.stat()`, click → zoom + navigate, drag rotate, wheel/pinch zoom, idle auto-rotate, brightness from recent activity (latest `updatedAt` per module), pixel ratio ≤ 2, pause when hidden, prefers-reduced-motion, auto-fallback to `renderModuleGrid()` if no WebGL / slow, visible "Switch to grid view" toggle remembered in localStorage) + "today at a glance" panel (next event, tasks due, mood, routines done — reuse today-parts.ts). Lazy-load three via dynamic import so grid users never download it.
+
+(Done) Phase 5: Money (income/expense log with monthly totals chart, monthly budget per category with spent vs budget, bills with due dates → `today.role='task'` + recurrence?, savings goals), People (contacts, birthdays → Today events via yearly recurrence, last-contacted, notes), Habits & Goals (daily habits → routine role with streaks; long-term goals with milestones), Notes (exists; add pinned-first sort / review).
 
 (Done) Phase 4: Schedule module (events with recurrence → `today.occursOn`, reminders, time blocks; month/week/day calendar view registered as `calendar`; in-app notifications while open), Work (shifts/hours, tasks with `today.role='task'`, projects, notes, wins, goals), Job Search (kanban view with drag & drop registered as `kanban`, applications, contacts/outreach with follow-ups, interview prep, resume versions, weekly counter), Wants & Wishes (status Idea/Planning/In progress/Done → `STATUS` in common.ts).

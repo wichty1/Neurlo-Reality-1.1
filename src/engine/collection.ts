@@ -141,7 +141,9 @@ export function renderCollection(mod: ModuleDef, col: Collection, openId?: strin
       recs = recs.filter((r) => f.type === 'checkbox' ? (r[k] === true) === (v === 'yes')
         : f.type === 'select' ? r[k] === v : asArray(r[k]).includes(v));
     }
-    return sortRecords(recs, ui.sortKey, ui.sortDir);
+    const sorted = sortRecords(recs, ui.sortKey, ui.sortDir);
+    const pin = col.pinField;
+    return pin ? [...sorted.filter((r) => r[pin] === true), ...sorted.filter((r) => r[pin] !== true)] : sorted;
   }
 
   function paint(): void {
