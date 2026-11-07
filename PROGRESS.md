@@ -5,7 +5,7 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 ## Status
 - [x] Phase 1 — scaffold, theme, router, nav shell, IndexedDB layer, generic module engine (test collection: Notes)
 - [x] Phase 2 — Today page, Settings & Data (export/import/wipe, CSV), command palette (Ctrl/Cmd+K)
-- [ ] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts (Mind config already written in Phase 2; chart views declared but renderer not built yet → they fall back to table)
+- [x] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts
 - [ ] Phase 4 — Schedule (calendar views), Work, Job Search (kanban DnD), Wants & Wishes
 - [ ] Phase 5 — Money, People, Habits & Goals, Notes (Notes config exists; review/extend)
 - [ ] Phase 6 — 3D brain homepage + 2D fallback + live stats
@@ -29,6 +29,13 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - Today page is driven by `Collection.today` hints (`role: event | task | routine | mood`, see types.ts). New modules feed Today just by declaring a hint.
 - `src/ui/palette.ts` — Ctrl/Cmd+K palette: pages, areas, sections, "New: X" actions, theme, export, and every record (full-text).
 - `src/pages/today*.ts`, `src/pages/settings.ts`, `src/styles/pages.css`.
+
+- `src/engine/charts.ts` — SVG line / bar / heatmap + `aggregate()` (per day or ISO week; avg/sum/count). `src/engine/chart-view.ts` registers the `chart` view (30d/90d/1y/All) and exports `trendChart()` used by overviews.
+- `ModuleDef.trends` → trend cards on the overview; `ModuleDef.stat` → live stat line (also for brain tooltips in Phase 6).
+- `Collection.derive` → computed fields on save (sleep hours from bed/wake).
+- `src/modules/common.ts` — `goalsCollection()`, `routineCollection()` (AM/PM etc., `everyDays` repeat, `active`), `avgRecent()`, `routineProgress()`. `productsCollection()` lives in skin.ts and is reused by hair.
+- Routine collections (`today.role = 'routine'`) render the checklist view as a per-day checklist with streaks; `dueEvery()` handles every-N-days items.
+- Goals collections declare a `kanban` view (falls back to table until Phase 4 registers kanban).
 
 ## Decisions
 - Emoji used as module icons (system font, no network).
@@ -60,9 +67,22 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - [ ] Today schedule / due tasks / routines lists: logic written, but no module declares event/task/routine hints yet → verify in Phase 3 (routines) and Phase 4 (events, tasks)
 - [ ] Not verified: "Ask browser to keep data" (persist prompt behaviour varies by browser)
 
+## Phase 3 manual test checklist (verified with Playwright)
+- [x] Old DB (only notes store) auto-upgrades; old data kept, new stores created
+- [x] Sleep hours derived from 23:30 → 07:00 = 7.5 h
+- [x] Quick-add with rating fields, repeated (found + fixed bug: rating state not reset between quick-adds)
+- [x] Line chart (2 series), heatmap (filled days), labs chart split per test (seriesBy)
+- [x] Meds and skin routine items appear on Today grouped; ticking persists after reload; streak 🔥 shown
+- [x] Every-7-days skin step is due today when never done
+- [x] Appointment with today's datetime shows in Today schedule with time
+- [x] Health overview stat "Sleep avg 7.2h (7d) · Meds 1/2 today" and 3 trend cards
+- [x] Phase 1 + 2 suites re-run green; no console errors; no external requests
+- [ ] Not verified: Hair "Next wash" stat text (logic shared with tested dueEvery), chart readability on a real phone
+- Units are US (lb, in, °F, oz) — simple choice; change `unit` in health.ts if needed (labels only, no conversion).
+
 ## Known issues
 - Keys typed in the few ms before the palette input mounts go to the page (could trigger the `n` shortcut). Minor.
 - Mobile tab bar: Home, Today, Search, More.
 
 ## Next
-Phase 3: Health, Skin Care, Hair Care modules + chart renderer (`registerView('chart', …)` in a new `src/engine/charts.ts`, line/bar/heatmap SVG) + module overview trend charts via `registerOverviewExtra`. Skin AM/PM routines, meds daily checklist, hair routine → `today: {role:'routine', groupField, activeOn}`.
+Phase 4: Schedule module (events with recurrence → `today.occursOn`, reminders, time blocks; month/week/day calendar view registered as `calendar`; in-app notifications while open), Work (shifts/hours, tasks with `today.role='task'`, projects, notes, wins, goals), Job Search (kanban view with drag & drop registered as `kanban`, applications, contacts/outreach with follow-ups, interview prep, resume versions, weekly counter), Wants & Wishes (status Idea/Planning/In progress/Done → `STATUS` in common.ts).

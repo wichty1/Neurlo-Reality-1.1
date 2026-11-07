@@ -1,5 +1,6 @@
 import type { ModuleDef } from '../core/types';
 import { isoDate, isoTime, isoDateTime } from '../core/util';
+import { avgRecent, round1 } from './common';
 
 const EMOTIONS = ['calm', 'happy', 'grateful', 'excited', 'proud', 'loved', 'focused', 'tired', 'bored',
   'anxious', 'stressed', 'sad', 'lonely', 'angry', 'frustrated', 'overwhelmed', 'hopeful', 'content'];
@@ -10,6 +11,14 @@ export const mind: ModuleDef = {
   icon: '💭',
   color: '#ff9ecf',
   description: 'Mood and energy, journal, stress triggers, gratitude, reflection and weekly reviews.',
+  trends: [
+    { collection: 'mood', title: 'Mood & energy', view: { type: 'chart', chart: 'line', valueFields: ['mood', 'energy'], agg: 'avg' } },
+    { collection: 'mood', title: 'Mood heatmap', view: { type: 'chart', chart: 'heatmap', valueFields: ['mood'], agg: 'avg' } },
+  ],
+  stat: async () => {
+    const m = await avgRecent('mind.mood', 'mood', 'date');
+    return m !== null ? `Mood avg ${round1(m)}/10 (7d)` : '';
+  },
   collections: [
     {
       id: 'mood', name: 'Mood log', icon: '🙂', titleField: 'date', dateField: 'date',

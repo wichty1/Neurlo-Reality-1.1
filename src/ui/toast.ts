@@ -3,7 +3,7 @@ import { h } from '../core/util';
 
 let host: HTMLElement | null = null;
 
-export function toast(message: string, action?: { label: string; run: () => void }, ms = 6000): void {
+export function toast(message: string, action?: { label: string; run: () => void }, ms = action ? 7000 : 2500): void {
   if (!host) {
     host = h('div', { class: 'toasts', role: 'status', 'aria-live': 'polite' });
     document.body.append(host);
@@ -15,6 +15,7 @@ export function toast(message: string, action?: { label: string; run: () => void
     el.append(h('button', { class: 'btn btn-sm', type: 'button', onclick: () => { action.run(); close(); } }, action.label));
   }
   el.append(h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Dismiss', onclick: close }, '×'));
+  while (host.children.length >= 3) host.firstElementChild?.remove();
   host.append(el);
   setTimeout(close, ms);
 }

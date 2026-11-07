@@ -26,3 +26,25 @@ export function streak(r: DBRecord, today = isoDate()): number {
   while (set.has(isoDate(d))) { n++; d = addDays(d, -1); }
   return n;
 }
+
+/**
+ * For items repeated every N days (wash day, weekly mask): due when not done within the last N-1 days,
+ * and still listed on the day it was completed. N <= 1 or missing = every day.
+ */
+export function dueEvery(r: DBRecord, day: string, everyDays: unknown): boolean {
+  const n = Number(everyDays);
+  if (!isFinite(n) || n <= 1) return true;
+  const days = daysOf(r);
+  if (days.includes(day)) return true;
+  const cutoff = isoDate(addDays(parseLocal(day)!, -(n - 1)));
+  return !days.some((d) => d >= cutoff && d < day);
+}
+
+/** Next date an every-N-days item is due (today if overdue). */
+export function nextDue(r: DBRecord, everyDays: unknown, today = isoDate()): string {
+  const n = Number(everyDays);
+  const last = daysOf(r).filter((d) => d <= today).at(-1);
+  if (!last || !isFinite(n) || n <= 1) return today;
+  const next = isoDate(addDays(parseLocal(last)!, n));
+  return next < today ? today : next;
+}

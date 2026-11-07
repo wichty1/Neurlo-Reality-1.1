@@ -4,6 +4,8 @@ import * as db from '../core/db';
 import { h, relTime } from '../core/util';
 import { displayValue, textValue } from './fields';
 import { openEditor } from './editor';
+import { isDoneOn, setDoneOn, streak } from '../core/routine';
+import { isoDate } from '../core/util';
 
 export interface ViewCtx {
   mod: ModuleDef;
@@ -79,6 +81,8 @@ export function checkToggle(ctx: { store: string }, r: DBRecord, key: string, la
 }
 
 registerView('checklist', (ctx) => {
+  // Routine collections without an explicit checkField are daily checklists (per-day completion + streak).
+  if (ctx.col.today?.role === 'routine' && !ctx.view.checkField) return dailyChecklist(ctx);
   const key = ctx.view.checkField ?? ctx.col.fields.find((f) => f.type === 'checkbox')?.key ?? 'done';
   const ul = h('ul', { class: 'checklist' });
   const sorted = [...ctx.records].sort((a, b) => Number(a[key] === true) - Number(b[key] === true));
@@ -90,3 +94,21 @@ registerView('checklist', (ctx) => {
   }
   return ul;
 });
+
+function dailyChecklist(ctx: ViewCtx): HTMLElement {
+  const today = isoDate();
+  const hint = ctx.col.today!;
+  const ul = h('ul', { class: 'checklist' });
+  for (const r of ctx.records) {
+    const title = titleOf(ctx.col, r);
+    const active = !hint.activeOn || hint.activeOn(r, today);
+    const c = h('input', { type: 'checkbox', 'aria-label': `${title} done today`, onchange: () => void setDoneOn(ctx.store, r, today, c.checked) });
+    c.checked = isDoneOn(r, today);
+    const st = streak(r, today);
+    const group = hint.groupField && r[hint.groupField] ? `${r[hint.groupField]} · ` : '';
+    ul.append(h('li', { class: `${c.checked ? 'done' : ''} ${active ? '' : 'inactive'}` }, c,
+      h('button', { type: 'button', class: 'link-btn', onclick: edit(ctx, r) }, title),
+      h('span', { class: 'muted small' }, `${group}${active ? '' : 'not due today · '}${st ? `🔥 ${st} day${st > 1 ? 's' : ''}` : 'no streak'}`)));
+  }
+  return h('div', {}, h('p', { class: 'muted small' }, 'Tick items as you do them today. Each day starts fresh; history is kept for streaks.'), ul);
+}

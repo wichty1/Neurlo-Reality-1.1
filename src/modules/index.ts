@@ -3,8 +3,11 @@ import type { Collection, ModuleDef } from '../core/types';
 import { storeName } from '../core/types';
 import { notes } from './notes';
 import { mind } from './mind';
+import { health } from './health';
+import { skin } from './skin';
+import { hair } from './hair';
 
-export const MODULES: ModuleDef[] = [mind, notes];
+export const MODULES: ModuleDef[] = [health, skin, hair, mind, notes];
 
 export function getModule(id: string): ModuleDef | undefined {
   return MODULES.find((m) => m.id === id);

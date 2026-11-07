@@ -36,6 +36,10 @@ export interface ViewDef {
   chart?: 'line' | 'bar' | 'heatmap';
   /** chart: how to aggregate values per day ('avg' | 'sum' | 'count'). */
   agg?: 'avg' | 'sum' | 'count';
+  /** chart: split one value field into several series by this field (e.g. lab test name). */
+  seriesBy?: string;
+  /** chart (bar): bucket size, default week. */
+  bucket?: 'day' | 'week';
 }
 
 /**
@@ -74,6 +78,8 @@ export interface Collection {
   defaultSort?: { key: string; dir: 'asc' | 'desc' };
   description?: string;
   today?: TodayHint;
+  /** Computes derived fields on save (e.g. sleep hours from bed/wake times); returned keys overwrite. */
+  derive?: (data: Record<string, unknown>) => Record<string, unknown>;
 }
 
 export interface ModuleDef {
@@ -83,6 +89,8 @@ export interface ModuleDef {
   color: string;
   description: string;
   collections: Collection[];
+  /** Trend charts shown on the module overview (collection id + chart view). */
+  trends?: { collection: string; view: ViewDef; title: string }[];
   /** Optional live stat for overview cards / brain tooltip. */
   stat?: () => Promise<string>;
 }

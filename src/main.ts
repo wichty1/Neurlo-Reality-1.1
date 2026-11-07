@@ -9,6 +9,7 @@ import { getModule, getCollection, allStoreNames } from './modules';
 import { buildShell, setActiveNav, setCrumbs, setTheme, getTheme, PAGES } from './ui/shell';
 import { closePanel, isPanelOpen } from './ui/panel';
 import { renderCollection } from './engine/collection';
+import './engine/chart-view';
 import { renderOverview } from './pages/overview';
 import { renderHome } from './pages/home';
 import { renderToday } from './pages/today';

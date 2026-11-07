@@ -6,7 +6,7 @@ import { h, asArray } from '../core/util';
 import { pageCtx, watchStores } from '../core/page';
 import { toast } from '../ui/toast';
 import { textValue, fieldInput, type FieldInput } from './fields';
-import { openEditor, newRecordData } from './editor';
+import { openEditor, newRecordData, applyDerive } from './editor';
 import { renderView, viewLabel } from './views';
 
 interface UIState { view: number; sortKey: string; sortDir: 'asc' | 'desc'; }
@@ -55,13 +55,19 @@ function quickAddForm(mod: ModuleDef, col: Collection, store: string): HTMLEleme
   const fields = keys.map((k) => col.fields.find((f) => f.key === k)).filter((f): f is Field => !!f);
   const inputs = new Map<string, FieldInput>();
   const form = h('form', { class: 'quick-add', 'aria-label': `Quick add to ${col.name}` });
-  for (const f of fields) {
-    const fi = fieldInput(f, undefined, () => {});
-    fi.el.classList.add('compact');
-    inputs.set(f.key, fi);
-    form.append(fi.el);
-  }
-  form.append(h('button', { type: 'submit', class: 'btn btn-primary' }, 'Add'));
+  // (Re)build fresh widgets so stateful inputs (ratings) fully reset after each add; defaults prefill.
+  const mount = () => {
+    const defaults = newRecordData(col);
+    form.replaceChildren();
+    for (const f of fields) {
+      const fi = fieldInput(f, f.key === col.titleField ? undefined : defaults[f.key], () => {});
+      fi.el.classList.add('compact');
+      inputs.set(f.key, fi);
+      form.append(fi.el);
+    }
+    form.append(h('button', { type: 'submit', class: 'btn btn-primary' }, 'Add'));
+  };
+  mount();
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
@@ -73,9 +79,8 @@ function quickAddForm(mod: ModuleDef, col: Collection, store: string): HTMLEleme
       }
       const missing = col.fields.find((f) => f.required && (data[f.key] === undefined || data[f.key] === ''));
       if (missing) { openEditor(mod, col, undefined, data); return; } // needs more info: open full form
-      await db.create(store, data);
-      form.reset();
-      form.querySelectorAll<HTMLButtonElement>('.rating button.on').forEach((b) => b.classList.remove('on'));
+      await db.create(store, applyDerive(col, data));
+      mount();
       inputs.get(fields[0]?.key)?.focusEl.focus();
     } catch (err) { toast(err instanceof Error ? err.message : String(err)); }
   });

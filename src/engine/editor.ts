@@ -14,7 +14,11 @@ function collect(col: Collection, inputs: Map<string, FieldInput>): Record<strin
     if (f.required && (v === undefined || v === '')) throw new Error(`${f.label} is required`);
     data[f.key] = v;
   }
-  return data;
+  return applyDerive(col, data);
+}
+
+export function applyDerive(col: Collection, data: Record<string, unknown>): Record<string, unknown> {
+  return col.derive ? { ...data, ...col.derive(data) } : data;
 }
 
 export async function deleteWithUndo(store: string, id: string, label = 'Entry'): Promise<void> {
