@@ -2,9 +2,10 @@
 import type { Collection, DBRecord, ModuleDef, TodayHint } from '../core/types';
 import { storeName } from '../core/types';
 import * as db from '../core/db';
-import { h, isoDate, isoTime, parseLocal } from '../core/util';
+import { h, isoTime, parseLocal } from '../core/util';
 import { href } from '../core/router';
 import { isDoneOn, setDoneOn } from '../core/routine';
+import { occursOn, timeOf } from '../core/recur';
 import { MODULES } from '../modules';
 import { openEditor, newRecordData } from '../engine/editor';
 import { titleOf } from '../engine/views';
@@ -31,11 +32,8 @@ export async function eventsOn(today: string): Promise<{ s: Source; r: DBRecord;
   for (const s of sourcesOf('event')) {
     const df = s.hint.dateField ?? s.col.dateField ?? 'date';
     for (const r of await db.list(s.store)) {
-      const hit = s.hint.occursOn ? s.hint.occursOn(r, today) : day(r[df]) === today;
-      if (!hit) continue;
-      const raw = s.hint.timeField ? r[s.hint.timeField] : r[df];
-      const time = typeof raw === 'string' && raw.includes('T') ? raw.slice(11, 16) : typeof raw === 'string' && /^\d\d:\d\d/.test(raw) ? raw.slice(0, 5) : '';
-      out.push({ s, r, time });
+      const hit = s.hint.occursOn ? s.hint.occursOn(r, today) : occursOn(r, today, df);
+      if (hit) out.push({ s, r, time: timeOf(r, df, s.hint.timeField) });
     }
   }
   return out.sort((a, b) => (a.time || '99').localeCompare(b.time || '99'));
@@ -133,4 +131,3 @@ export async function moodCheckin(today: string): Promise<Node> {
   return h('div', {}, summary, form);
 }
 
-export function todayISO(): string { return isoDate(); }

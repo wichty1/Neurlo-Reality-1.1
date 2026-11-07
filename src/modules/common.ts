@@ -39,7 +39,7 @@ export function routineCollection(opts: { groups: string[]; groupLabel: string; 
       { key: 'order', label: 'Order', type: 'number', min: 0, step: 1, help: 'Lower numbers come first' },
       { key: 'product', label: 'Product', type: 'text' },
       { key: 'everyDays', label: 'Repeat every (days)', type: 'number', min: 1, step: 1, default: 1, help: '1 = daily, 3 = every third day, 7 = weekly' },
-      { key: 'active', label: 'Active', type: 'checkbox', default: true },
+      { key: 'active', label: 'Active', type: 'checkbox', default: true, filter: false },
       { key: 'notes', label: 'Notes', type: 'longtext' },
     ],
     views: [{ type: 'checklist', label: 'Today' }, { type: 'table' }],

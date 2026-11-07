@@ -58,7 +58,7 @@ export function renderOverview(mod: ModuleDef): HTMLElement {
       h('span', { class: 'muted small' }, ` · ${c.name} · ${relTime(r.updatedAt)}`)))));
   }
 
-  watchStores(db.dbEvents, stores, () => void paint());
+  watchStores(db.dbEvents, extras.has(mod.id) ? null : stores, () => void paint());
   void paint();
   return h('section', { class: 'overview' },
     h('div', { class: 'page-head' }, h('h1', {}, h('span', { 'aria-hidden': 'true' }, mod.icon), ' ', mod.name), h('p', { class: 'muted' }, mod.description), stat),

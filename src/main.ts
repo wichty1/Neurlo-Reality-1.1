@@ -10,6 +10,10 @@ import { buildShell, setActiveNav, setCrumbs, setTheme, getTheme, PAGES } from '
 import { closePanel, isPanelOpen } from './ui/panel';
 import { renderCollection } from './engine/collection';
 import './engine/chart-view';
+import './engine/calendar';
+import './engine/kanban';
+import { startReminders } from './core/reminders';
+import './pages/schedule-overview';
 import { renderOverview } from './pages/overview';
 import { renderHome } from './pages/home';
 import { renderToday } from './pages/today';
@@ -82,6 +86,7 @@ async function boot(): Promise<void> {
   const { main, crumbs } = buildShell(app);
   shortcuts();
   installPalette();
+  startReminders();
   onRoute((r) => render(r, main, crumbs));
   render(currentRoute(), main, crumbs);
 }

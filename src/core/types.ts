@@ -20,6 +20,8 @@ export interface Field {
   /** Hide from table columns / card body (still editable in the form). */
   hidden?: boolean;
   help?: string;
+  /** Set false to hide this field from the collection filter bar. */
+  filter?: boolean;
 }
 
 export type ViewType = 'table' | 'cards' | 'checklist' | 'calendar' | 'kanban' | 'chart';

@@ -6,8 +6,12 @@ import { mind } from './mind';
 import { health } from './health';
 import { skin } from './skin';
 import { hair } from './hair';
+import { schedule } from './schedule';
+import { work } from './work';
+import { jobs } from './jobs';
+import { wants } from './wants';
 
-export const MODULES: ModuleDef[] = [health, skin, hair, mind, notes];
+export const MODULES: ModuleDef[] = [schedule, health, skin, hair, mind, work, jobs, wants, notes];
 
 export function getModule(id: string): ModuleDef | undefined {
   return MODULES.find((m) => m.id === id);

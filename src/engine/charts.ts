@@ -22,7 +22,9 @@ const dayOf = (v: unknown) => (typeof v === 'string' ? v.slice(0, 10) : '');
 export function aggregate(recs: DBRecord[], dateField: string, valueField: string | null, agg: Agg, bucket: 'day' | 'week' = 'day'): Map<string, number> {
   const groups = new Map<string, number[]>();
   for (const r of recs) {
-    let d = dayOf(r[dateField]) || isoDate(new Date(r.createdAt));
+    // Records without a date are skipped (e.g. applications not yet sent), except when charting by creation time.
+    let d = dateField === 'createdAt' ? isoDate(new Date(r.createdAt)) : dayOf(r[dateField]);
+    if (!d) continue;
     if (bucket === 'week') d = isoDate(startOfWeek(parseLocal(d)!));
     const v = valueField ? Number(r[valueField]) : 1;
     if (valueField && (r[valueField] === undefined || r[valueField] === '' || !isFinite(v))) continue;

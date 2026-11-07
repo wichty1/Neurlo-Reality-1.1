@@ -95,6 +95,23 @@ function storageSection(): HTMLElement {
   return h('section', { class: 'card settings-sec' }, h('h2', {}, 'Storage'), info, persistBtn);
 }
 
+function notifySection(): HTMLElement {
+  const info = h('p', { class: 'small' });
+  const btn = h('button', { type: 'button', class: 'btn btn-sm' }, 'Allow desktop notifications');
+  const paint = () => {
+    if (!('Notification' in window)) { info.textContent = 'This browser does not support notifications; reminders show as in-app pop-ups.'; btn.hidden = true; return; }
+    const p = Notification.permission;
+    info.textContent = p === 'granted' ? 'Desktop notifications are on (shown when the app is open in a background tab).'
+      : p === 'denied' ? 'Notifications are blocked in browser settings; reminders show as in-app pop-ups.'
+      : 'Reminders show as in-app pop-ups. Allow notifications to also see them when this tab is in the background.';
+    btn.hidden = p !== 'default';
+  };
+  btn.addEventListener('click', async () => { await Notification.requestPermission(); paint(); });
+  paint();
+  return h('section', { class: 'card settings-sec' }, h('h2', {}, 'Reminders'),
+    h('p', { class: 'muted' }, 'Reminders only work while the app is open in a browser tab. No push service or server is used.'), info, btn);
+}
+
 function wipeSection(): HTMLElement {
   const step2 = h('div', { class: 'wipe-confirm', hidden: true });
   const input = h('input', { type: 'text', 'aria-label': 'Type DELETE to confirm', placeholder: 'Type DELETE', autocomplete: 'off' });
@@ -117,7 +134,7 @@ function wipeSection(): HTMLElement {
 export function renderSettings(): HTMLElement {
   return h('section', { class: 'settings' },
     h('div', { class: 'page-head' }, h('h1', {}, '⚙️ Settings & Data'), h('p', { class: 'muted' }, 'Your data never leaves this device unless you export it.')),
-    themeSection(), backupSection(), csvSection(), storageSection(), wipeSection(),
+    themeSection(), backupSection(), csvSection(), storageSection(), notifySection(), wipeSection(),
     h('section', { class: 'card settings-sec' }, h('h2', {}, 'Keyboard shortcuts'),
       h('ul', { class: 'small' },
         h('li', {}, h('kbd', {}, 'Ctrl/⌘ K'), ' search and jump anywhere'),

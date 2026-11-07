@@ -47,7 +47,7 @@ export function sortRecords(recs: DBRecord[], key: string, dir: 'asc' | 'desc'):
 }
 
 function filterFields(col: Collection): Field[] {
-  return col.fields.filter((f) => f.type === 'select' || f.type === 'multiselect' || f.type === 'tags' || f.type === 'checkbox').slice(0, 4);
+  return col.fields.filter((f) => f.filter !== false && (f.type === 'select' || f.type === 'multiselect' || f.type === 'tags' || f.type === 'checkbox')).slice(0, 4);
 }
 
 function quickAddForm(mod: ModuleDef, col: Collection, store: string): HTMLElement {
@@ -112,7 +112,7 @@ export function renderCollection(mod: ModuleDef, col: Collection, openId?: strin
       else opts = f.options ?? [];
       if (!opts.length) continue;
       const s = h('select', { 'aria-label': `Filter by ${f.label}`, onchange: () => { if (s.value) filters.set(f.key, s.value); else filters.delete(f.key); paint(); } },
-        h('option', { value: '' }, `All ${f.label.toLowerCase()}`), ...opts.map((o) => h('option', { value: o }, f.type === 'tags' ? `#${o}` : o)));
+        h('option', { value: '' }, `${f.label}: all`), ...opts.map((o) => h('option', { value: o }, f.type === 'tags' ? `#${o}` : o)));
       s.value = filters.get(f.key) ?? '';
       filterBar.append(s);
     }
