@@ -2,7 +2,7 @@
 import type { Collection, DBRecord, ModuleDef, ViewDef, ViewType } from '../core/types';
 import * as db from '../core/db';
 import { h, relTime } from '../core/util';
-import { displayValue } from './fields';
+import { displayValue, textValue } from './fields';
 import { openEditor } from './editor';
 
 export interface ViewCtx {
@@ -28,8 +28,9 @@ export const viewLabel = (v: ViewDef): string =>
   v.label ?? ({ table: 'Table', cards: 'Cards', checklist: 'Checklist', calendar: 'Calendar', kanban: 'Board', chart: 'Chart' } as const)[v.type];
 
 export function titleOf(col: Collection, r: DBRecord): string {
-  const v = r[col.titleField];
-  return v === undefined || v === null || v === '' ? '(untitled)' : String(v);
+  const f = col.fields.find((x) => x.key === col.titleField);
+  const v = f ? textValue(f, r[col.titleField]) : '';
+  return v || '(untitled)';
 }
 
 const edit = (ctx: ViewCtx, r: DBRecord) => () => openEditor(ctx.mod, ctx.col, r);

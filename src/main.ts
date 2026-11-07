@@ -1,5 +1,6 @@
 import './styles/base.css';
 import './styles/components.css';
+import './styles/pages.css';
 import { initDB } from './core/db';
 import { currentRoute, onRoute, href, type Route } from './core/router';
 import { runLeave, pageCtx } from './core/page';
@@ -10,6 +11,13 @@ import { closePanel, isPanelOpen } from './ui/panel';
 import { renderCollection } from './engine/collection';
 import { renderOverview } from './pages/overview';
 import { renderHome } from './pages/home';
+import { renderToday } from './pages/today';
+import { renderSettings } from './pages/settings';
+import { installPalette } from './ui/palette';
+import { registerPage } from './ui/shell';
+
+registerPage({ id: 'today', name: 'Today', icon: '☀️', position: 'top', render: renderToday });
+registerPage({ id: 'settings', name: 'Settings & Data', icon: '⚙️', position: 'bottom', render: renderSettings });
 
 setTheme(getTheme());
 
@@ -72,6 +80,7 @@ async function boot(): Promise<void> {
   }
   const { main, crumbs } = buildShell(app);
   shortcuts();
+  installPalette();
   onRoute((r) => render(r, main, crumbs));
   render(currentRoute(), main, crumbs);
 }

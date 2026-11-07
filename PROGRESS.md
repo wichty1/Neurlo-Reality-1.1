@@ -4,8 +4,8 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 
 ## Status
 - [x] Phase 1 — scaffold, theme, router, nav shell, IndexedDB layer, generic module engine (test collection: Notes)
-- [ ] Phase 2 — Today page, Settings & Data (export/import/wipe, CSV), command palette (Ctrl/Cmd+K)
-- [ ] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts
+- [x] Phase 2 — Today page, Settings & Data (export/import/wipe, CSV), command palette (Ctrl/Cmd+K)
+- [ ] Phase 3 — Health, Skin Care, Hair Care, Mind & Feelings + charts (Mind config already written in Phase 2; chart views declared but renderer not built yet → they fall back to table)
 - [ ] Phase 4 — Schedule (calendar views), Work, Job Search (kanban DnD), Wants & Wishes
 - [ ] Phase 5 — Money, People, Habits & Goals, Notes (Notes config exists; review/extend)
 - [ ] Phase 6 — 3D brain homepage + 2D fallback + live stats
@@ -23,6 +23,12 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - `src/pages/overview.ts` — generic module overview; `registerOverviewExtra(modId, fn)` for charts/widgets.
 - `src/modules/index.ts` — MODULES registry. New module = new config file + add to array.
 - `src/ui/shell.ts` — sidebar / mobile tab bar / breadcrumbs / FAB / theme. Mobile tab bar currently: Home, first top page, Notes, More — revisit once Today exists.
+
+- `src/core/backup.ts` — JSON backup (`{format:'neurlo-backup', version:1, exportedAt, data}`), import parse/validate, CSV per collection, weekly backup reminder (`lastBackupAt` in localStorage).
+- `src/core/routine.ts` — per-day completion stored on record as `_days: string[]`; `streak()` for habits.
+- Today page is driven by `Collection.today` hints (`role: event | task | routine | mood`, see types.ts). New modules feed Today just by declaring a hint.
+- `src/ui/palette.ts` — Ctrl/Cmd+K palette: pages, areas, sections, "New: X" actions, theme, export, and every record (full-text).
+- `src/pages/today*.ts`, `src/pages/settings.ts`, `src/styles/pages.css`.
 
 ## Decisions
 - Emoji used as module icons (system font, no network).
@@ -44,8 +50,19 @@ Resume from here. Brief = the 9-section spec in the original prompt (phases 1–
 - [x] No console errors, no external network requests
 - [ ] Not verified: real touch devices, screen reader output
 
+## Phase 2 manual test checklist (verified with Playwright against `vite preview`)
+- [x] Today mood check-in (rating + emotion chips) saves and shows "Mood 7/10 · Energy 5/10"
+- [x] Today quick-add into any collection (remembers last choice)
+- [x] Ctrl+K palette finds a record by text and opens its editor; navigates to pages
+- [x] Export JSON → wipe (requires typing DELETE) → import restores every store byte-identical (deep-compared raw IndexedDB dump), and survives reload
+- [x] CSV export escapes quotes, commas and newlines; arrays joined with "; "
+- [x] No console errors, no external requests
+- [ ] Today schedule / due tasks / routines lists: logic written, but no module declares event/task/routine hints yet → verify in Phase 3 (routines) and Phase 4 (events, tasks)
+- [ ] Not verified: "Ask browser to keep data" (persist prompt behaviour varies by browser)
+
 ## Known issues
-- None open.
+- Keys typed in the few ms before the palette input mounts go to the page (could trigger the `n` shortcut). Minor.
+- Mobile tab bar: Home, Today, Search, More.
 
 ## Next
-Phase 2: Today page (`registerPage` position top), Settings & Data page (position bottom), command palette.
+Phase 3: Health, Skin Care, Hair Care modules + chart renderer (`registerView('chart', …)` in a new `src/engine/charts.ts`, line/bar/heatmap SVG) + module overview trend charts via `registerOverviewExtra`. Skin AM/PM routines, meds daily checklist, hair routine → `today: {role:'routine', groupField, activeOn}`.

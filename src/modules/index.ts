@@ -2,8 +2,9 @@
 import type { Collection, ModuleDef } from '../core/types';
 import { storeName } from '../core/types';
 import { notes } from './notes';
+import { mind } from './mind';
 
-export const MODULES: ModuleDef[] = [notes];
+export const MODULES: ModuleDef[] = [mind, notes];
 
 export function getModule(id: string): ModuleDef | undefined {
   return MODULES.find((m) => m.id === id);

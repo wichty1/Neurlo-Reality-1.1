@@ -6,6 +6,7 @@ import { MODULES } from '../modules';
 import { storeName } from '../core/types';
 import { openPanel, closePanel } from './panel';
 import { openEditor } from '../engine/editor';
+import { openPalette } from './palette';
 
 export interface PageDef {
   id: string; name: string; icon: string;
@@ -66,17 +67,23 @@ export function buildShell(root: HTMLElement): { main: HTMLElement; crumbs: HTML
   const tabs = h('nav', { class: 'tabbar', 'aria-label': 'Main (mobile)' },
     navLink('home', 'Home', '🏠', '#/'),
     ...PAGES.filter((p) => p.position === 'top').slice(0, 1).map((p) => navLink(p.id, p.name, p.icon, href(p.id))),
-    navLink('notes', 'Notes', '📝', href('m', 'notes')),
+    h('button', { type: 'button', class: 'tab', onclick: () => void openPalette() }, h('span', { 'aria-hidden': 'true' }, '🔍'), h('span', {}, 'Search')),
     moreBtn);
 
   const crumbs = h('nav', { class: 'crumbs', 'aria-label': 'Breadcrumb' });
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+  const topbar = h('div', { class: 'topbar' }, crumbs,
+    h('div', { class: 'topbar-actions' },
+      h('button', { type: 'button', class: 'btn btn-sm search-btn', onclick: () => void openPalette(), 'aria-keyshortcuts': 'Control+K Meta+K' },
+        '🔍 Search', h('kbd', {}, isMac ? '⌘K' : 'Ctrl K')),
+      h('button', { type: 'button', class: 'btn btn-sm', onclick: openAddChooser }, '⚡ Quick log')));
   const main = h('main', { id: 'main', tabindex: -1 });
   const fab = h('button', { type: 'button', class: 'fab', 'aria-label': 'Add new (N)', title: 'Add new (N)',
     onclick: () => (pageCtx.fab ?? openAddChooser)() }, '+');
 
   root.replaceChildren(
     h('a', { href: '#main', class: 'skip-link', onclick: (e: Event) => { e.preventDefault(); main.focus(); } }, 'Skip to content'),
-    side, h('div', { class: 'content' }, crumbs, main), tabs, fab);
+    side, h('div', { class: 'content' }, topbar, main), tabs, fab);
   return { main, crumbs };
 }
 

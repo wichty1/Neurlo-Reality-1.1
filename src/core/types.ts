@@ -38,6 +38,27 @@ export interface ViewDef {
   agg?: 'avg' | 'sum' | 'count';
 }
 
+/**
+ * Declares how a collection feeds the Today page.
+ * - event:   shown in today's schedule when dateField (date/datetime) is today, or occursOn() says so.
+ * - task:    shown when dateField (due) is today or earlier and doneField is not checked.
+ * - routine: daily checklist; completion per day is kept in the record's `_days` array (ISO dates).
+ * - mood:    quick check-in using the listed rating fields and an optional tags/multiselect field.
+ */
+export interface TodayHint {
+  role: 'event' | 'task' | 'routine' | 'mood';
+  dateField?: string;
+  timeField?: string;
+  doneField?: string;
+  occursOn?: (r: DBRecord, day: string) => boolean;
+  /** routine: whether the item applies on that day (e.g. wash days, AM/PM). */
+  activeOn?: (r: DBRecord, day: string) => boolean;
+  /** routine: field used to group items (e.g. "AM"/"PM"). */
+  groupField?: string;
+  ratingFields?: string[];
+  tagsField?: string;
+}
+
 export interface Collection {
   id: string;
   name: string;
@@ -52,6 +73,7 @@ export interface Collection {
   quickAdd?: string[];
   defaultSort?: { key: string; dir: 'asc' | 'desc' };
   description?: string;
+  today?: TodayHint;
 }
 
 export interface ModuleDef {
